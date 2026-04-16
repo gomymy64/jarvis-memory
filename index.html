@@ -1,0 +1,1614 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Материалы к Уроку — Claude Code + Obsidian: Jarvis | Мастодонт</title>
+<meta name="description" content="Шпаргалка к видео: как собрать персональный AI-ассистент Jarvis на базе Claude Code и Obsidian по паттерну Андрея Карпати. Промпты, ссылки, пошаговка." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   MEMORY VAULT — обсидиановая ночь + жидкое золото
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* Core palette */
+  --bg: #0a0712;
+  --bg-elev: #120d1f;
+  --bg-card: #151024;
+  --bg-deep: #070510;
+  --fg: #f0ebe0;
+  --fg-dim: #a79fb0;
+  --fg-faint: #6f6780;
+  --border: #241d37;
+  --border-soft: #1a1428;
+
+  /* Brand accents */
+  --amber: #e8c154;
+  --amber-bright: #ffd970;
+  --violet: #9d7cff;
+  --violet-bright: #b79aff;
+  --cyan: #50e3c2;
+  --magenta: #ff6b9d;
+
+  /* Gradients */
+  --grad-brand: linear-gradient(135deg, #e8c154 0%, #d18cff 55%, #9d7cff 100%);
+  --grad-brand-soft: linear-gradient(135deg, rgba(232,193,84,0.15) 0%, rgba(157,124,255,0.15) 100%);
+  --grad-text: linear-gradient(92deg, #e8c154 0%, #f0ebe0 30%, #b79aff 65%, #9d7cff 100%);
+  --grad-line: linear-gradient(90deg, transparent 0%, #e8c154 25%, #9d7cff 75%, transparent 100%);
+
+  /* Shadows & glow */
+  --glow-amber: 0 0 40px rgba(232,193,84,0.25), 0 0 80px rgba(232,193,84,0.08);
+  --glow-violet: 0 0 40px rgba(157,124,255,0.3), 0 0 80px rgba(157,124,255,0.1);
+  --glow-soft: 0 4px 32px rgba(0,0,0,0.4);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  font-feature-settings: 'ss01', 'ss02';
+}
+
+/* Atmosphere: dual glow + grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 1100px 800px at 12% -10%, rgba(232,193,84,0.08), transparent 60%),
+    radial-gradient(ellipse 900px 700px at 88% 110%, rgba(157,124,255,0.12), transparent 60%),
+    radial-gradient(ellipse 600px 400px at 50% 50%, rgba(80,227,194,0.03), transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, #0d0818 100%);
+}
+
+/* Subtle paper grain */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.2 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ───── Typography ───── */
+h1, h2, h3, h4, .display {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+::selection { background: var(--amber); color: var(--bg); }
+
+a { color: var(--amber); text-decoration: none; transition: color .2s; }
+a:hover { color: var(--amber-bright); }
+
+/* ───── Scrollbar ───── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--amber), var(--violet)); border-radius: 10px; border: 2px solid var(--bg-deep); }
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════ */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,7,18,0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+nav::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--grad-line);
+  opacity: 0.6;
+}
+
+.nav-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: clamp(14px, 2vw, 20px) clamp(16px, 4vw, 40px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 1.3vw, 17px);
+  letter-spacing: 0.18em;
+  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity .2s;
+}
+
+.brand:hover { opacity: 0.8; color: var(--fg); }
+
+.brand-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--grad-brand);
+  box-shadow: var(--glow-amber);
+  flex-shrink: 0;
+}
+
+.nav-links { display: flex; gap: clamp(8px, 1.5vw, 22px); align-items: center; }
+
+.nav-link {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--fg-dim);
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all .2s;
+  white-space: nowrap;
+}
+
+.nav-link:hover { color: var(--fg); background: rgba(232,193,84,0.06); }
+
+@media (max-width: 640px) { .nav-links .nav-link:not(:last-child) { display: none; } }
+
+/* ═══════════════════════════════════════════
+   SHARED LAYOUT
+   ═══════════════════════════════════════════ */
+main { position: relative; z-index: 1; }
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+}
+
+section { padding: clamp(56px, 10vw, 120px) 0; position: relative; }
+
+.section-head { margin-bottom: clamp(32px, 5vw, 56px); }
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 7px 14px;
+  border: 1px solid rgba(232,193,84,0.25);
+  border-radius: 999px;
+  background: rgba(232,193,84,0.04);
+  margin-bottom: 20px;
+}
+
+.section-label::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--amber);
+}
+
+.section-title {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 500;
+  max-width: 900px;
+  line-height: 1.08;
+}
+
+.section-title .accent {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+.section-sub {
+  color: var(--fg-dim);
+  font-size: clamp(16px, 1.4vw, 19px);
+  max-width: 680px;
+  margin-top: 18px;
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════ */
+.hero {
+  padding: clamp(80px, 12vw, 160px) 0 clamp(56px, 9vw, 96px);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-J {
+  position: absolute;
+  top: 50%;
+  right: -10%;
+  transform: translateY(-50%);
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(380px, 50vw, 720px);
+  font-weight: 200;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(232,193,84,0.06);
+  text-stroke: 1px rgba(232,193,84,0.06);
+  pointer-events: none;
+  letter-spacing: -0.08em;
+  user-select: none;
+  z-index: 0;
+}
+
+.hero-inner { position: relative; z-index: 2; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  padding: 9px 16px;
+  background: rgba(240,235,224,0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-bottom: 28px;
+}
+
+.hero-badge::before {
+  content: '▸';
+  color: var(--amber);
+  font-size: 12px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.hero-meta span::before { content: '— '; color: var(--amber); opacity: 0.7; }
+
+h1.hero-title {
+  font-size: clamp(40px, 6.5vw, 88px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  max-width: 1100px;
+  margin-bottom: 28px;
+}
+
+h1.hero-title .gold {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+h1.hero-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--fg-dim);
+}
+
+.hero-sub {
+  font-size: clamp(17px, 1.5vw, 22px);
+  color: var(--fg-dim);
+  max-width: 720px;
+  line-height: 1.55;
+  margin-bottom: 40px;
+}
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all .25s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--grad-brand);
+  color: #1a1428;
+  box-shadow: 0 4px 20px rgba(232,193,84,0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(232,193,84,0.4);
+  color: #1a1428;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--fg-dim);
+  border-color: var(--border);
+}
+
+.btn-ghost:hover {
+  color: var(--fg);
+  border-color: var(--amber);
+  background: rgba(232,193,84,0.04);
+}
+
+.btn-play { font-size: 10px; }
+
+/* ═══════════════════════════════════════════
+   OBJECTIVES (Что научишься)
+   ═══════════════════════════════════════════ */
+.obj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.obj-card {
+  position: relative;
+  padding: clamp(22px, 2.5vw, 30px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  transition: all .3s;
+  overflow: hidden;
+}
+
+.obj-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad-brand);
+  opacity: 0.6;
+  transition: opacity .3s;
+}
+
+.obj-card:hover {
+  border-color: rgba(232,193,84,0.3);
+  transform: translateY(-3px);
+}
+
+.obj-card:hover::before { opacity: 1; }
+
+.obj-ico {
+  width: 40px; height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grad-brand-soft);
+  border: 1px solid rgba(232,193,84,0.2);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  color: var(--amber);
+}
+
+.obj-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--fg);
+}
+
+.obj-card p {
+  font-size: 14px;
+  color: var(--fg-dim);
+  line-height: 1.55;
+}
+
+/* ═══════════════════════════════════════════
+   TOOLS (Что понадобится)
+   ═══════════════════════════════════════════ */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.tool {
+  position: relative;
+  display: block;
+  padding: 20px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: all .25s;
+  color: var(--fg);
+}
+
+.tool:hover {
+  border-color: var(--amber);
+  transform: translateY(-2px);
+  background: #1a1428;
+  color: var(--fg);
+}
+
+.tool-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tool-name {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.tool-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tool-badge.free { background: rgba(80,227,194,0.1); color: var(--cyan); border: 1px solid rgba(80,227,194,0.25); }
+.tool-badge.paid { background: rgba(232,193,84,0.1); color: var(--amber); border: 1px solid rgba(232,193,84,0.25); }
+.tool-badge.freemium { background: rgba(157,124,255,0.1); color: var(--violet); border: 1px solid rgba(157,124,255,0.25); }
+.tool-badge.content { background: rgba(255,107,157,0.08); color: var(--magenta); border: 1px solid rgba(255,107,157,0.25); }
+
+.tool-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--fg-faint);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.tool:hover .tool-url { color: var(--fg-dim); }
+
+/* ═══════════════════════════════════════════
+   STEPS
+   ═══════════════════════════════════════════ */
+.steps { display: flex; flex-direction: column; gap: clamp(20px, 3vw, 32px); }
+
+.step {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: clamp(28px, 4vw, 48px);
+  overflow: hidden;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--grad-brand);
+}
+
+/* Watermark number */
+.step::after {
+  content: attr(data-num);
+  position: absolute;
+  top: -20px; right: -30px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(180px, 22vw, 300px);
+  font-weight: 200;
+  line-height: 1;
+  color: var(--amber);
+  opacity: 0.035;
+  letter-spacing: -0.08em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.step > * { position: relative; z-index: 1; }
+
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.step-num {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 600;
+  font-size: clamp(44px, 5vw, 64px);
+  line-height: 1;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  flex: 1;
+  min-width: 200px;
+}
+
+.step-intro {
+  font-size: clamp(15px, 1.2vw, 17px);
+  color: var(--fg-dim);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 860px;
+}
+
+.step-actions { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+
+.step-action {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 0;
+  font-size: 15px;
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+.step-action::before {
+  content: '▸';
+  color: var(--amber);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 14px;
+}
+
+.step-hint {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: rgba(157,124,255,0.05);
+  border-left: 3px solid var(--violet);
+  border-radius: 0 10px 10px 0;
+  font-size: 14.5px;
+  color: var(--fg-dim);
+  line-height: 1.55;
+}
+
+.step-hint::before {
+  content: '💡 ';
+  font-size: 14px;
+}
+
+.step-hint strong { color: var(--violet-bright); font-weight: 600; }
+
+/* Settings block */
+.step-settings {
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: rgba(80,227,194,0.04);
+  border: 1px dashed rgba(80,227,194,0.3);
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--fg-dim);
+}
+
+.step-settings::before {
+  content: '⚙ ';
+  color: var(--cyan);
+  font-family: 'Outfit', sans-serif;
+}
+
+.step-settings strong { color: var(--cyan); font-weight: 500; }
+
+/* ═══════════════════════════════════════════
+   PROMPT BLOCK
+   ═══════════════════════════════════════════ */
+.prompt {
+  margin: 24px 0;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.3);
+}
+
+.prompt::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 3px;
+  background: var(--grad-brand);
+}
+
+.prompt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(232,193,84,0.03);
+}
+
+.prompt-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prompt-label::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--amber);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.prompt-copy {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+
+.prompt-copy:hover { color: var(--amber); border-color: var(--amber); background: rgba(232,193,84,0.04); }
+
+.prompt-copy.copied { color: var(--cyan); border-color: var(--cyan); background: rgba(80,227,194,0.05); }
+
+.prompt-body {
+  padding: 22px 26px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.prompt-body::-webkit-scrollbar { width: 6px; }
+.prompt-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ═══════════════════════════════════════════
+   LINKS GRID
+   ═══════════════════════════════════════════ */
+.links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: all .25s;
+  color: var(--fg);
+}
+
+.link-card:hover {
+  border-color: var(--amber);
+  background: #1a1428;
+  color: var(--fg);
+  transform: translateX(3px);
+}
+
+.link-ico {
+  width: 38px; height: 38px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grad-brand-soft);
+  border: 1px solid rgba(232,193,84,0.2);
+  border-radius: 10px;
+  color: var(--amber);
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.link-body { flex: 1; min-width: 0; }
+
+.link-name {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.link-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--fg-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-arrow {
+  color: var(--fg-faint);
+  flex-shrink: 0;
+  transition: transform .25s, color .25s;
+}
+
+.link-card:hover .link-arrow { color: var(--amber); transform: translate(3px, -3px); }
+
+/* ═══════════════════════════════════════════
+   CTA block
+   ═══════════════════════════════════════════ */
+.cta-wrap { padding: clamp(40px, 6vw, 80px) 0; }
+
+.cta {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(40px, 5vw, 64px) clamp(36px, 6vw, 100px);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  overflow: hidden;
+  animation: ctaGlow 3s ease-in-out infinite;
+}
+
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(232,193,84,0), 0 0 0 rgba(157,124,255,0); }
+  50% { box-shadow: 0 0 60px rgba(232,193,84,0.15), 0 0 120px rgba(157,124,255,0.08); }
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 28px;
+  padding: 1px;
+  background: var(--grad-brand);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.cta-text {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 500;
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 600px;
+}
+
+.cta-text .gold {
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 40px;
+  background: var(--grad-brand);
+  color: #1a1428;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  border-radius: 14px;
+  transition: all .25s;
+  box-shadow: 0 4px 20px rgba(232,193,84,0.25);
+  white-space: nowrap;
+}
+
+.cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(232,193,84,0.4);
+  color: #1a1428;
+}
+
+@media (max-width: 720px) {
+  .cta { flex-direction: column; align-items: stretch; text-align: left; padding: 36px 28px; }
+  .cta-btn { justify-content: center; width: 100%; }
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════ */
+footer {
+  padding: clamp(48px, 6vw, 80px) 0 clamp(32px, 4vw, 48px);
+  border-top: 1px solid var(--border-soft);
+  margin-top: clamp(40px, 5vw, 64px);
+}
+
+.foot-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.foot-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.foot-brand-name {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--fg);
+}
+
+.foot-brand-name:hover { color: var(--amber); }
+
+.foot-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--fg-faint);
+  text-transform: uppercase;
+}
+
+.foot-yt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all .25s;
+}
+
+.foot-yt:hover { color: var(--fg); border-color: var(--amber); background: rgba(232,193,84,0.04); }
+
+.foot-yt::before {
+  content: '▶';
+  color: var(--amber);
+  font-size: 11px;
+}
+
+/* ═══════════════════════════════════════════
+   Animations (subtle fade-in)
+   ═══════════════════════════════════════════ */
+.fade-up { opacity: 0; transform: translateY(20px); transition: opacity .8s cubic-bezier(.2,.9,.3,1), transform .8s cubic-bezier(.2,.9,.3,1); }
+.fade-up.in { opacity: 1; transform: translateY(0); }
+
+/* ═══════════════════════════════════════════
+   Responsive tweaks
+   ═══════════════════════════════════════════ */
+@media (max-width: 540px) {
+  .hero-badge { font-size: 10px; padding: 7px 12px; }
+  .hero-meta { gap: 14px; font-size: 10px; }
+  .btn { padding: 14px 22px; font-size: 13px; }
+  .step { padding: 24px 20px; border-radius: 18px; }
+  .step-head { gap: 14px; }
+  .prompt-head { padding: 12px 16px; }
+  .prompt-body { padding: 18px; font-size: 12.5px; }
+  .cta-text { font-size: 20px; }
+}
+
+@media (min-width: 2400px) {
+  .container { max-width: 1520px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="https://aimastodont.com/" target="_blank" rel="noopener" class="brand">
+      <span class="brand-dot"></span>
+      МАСТОДОНТ
+    </a>
+    <div class="nav-links">
+      <a href="#tools" class="nav-link">Инструменты</a>
+      <a href="#steps" class="nav-link">Шаги</a>
+      <a href="#links" class="nav-link">Ссылки</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════ HERO ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg-J">J</div>
+  <div class="container hero-inner">
+    <div class="hero-badge">Материалы к уроку</div>
+    <div class="hero-meta">
+      <span>Claude Code × Obsidian</span>
+      <span>Паттерн Карпати</span>
+      <span>~20 мин практики</span>
+    </div>
+    <h1 class="hero-title">
+      Собираем <span class="gold">JARVIS</span><br>
+      <em>—</em> персональную память,<br>
+      которая <span class="gold">никогда не забывает</span>
+    </h1>
+    <p class="hero-sub">
+      Система от Андрея Карпати — Claude Code сам ведёт твою локальную Википедию в папке с Markdown-файлами. Каждая новая статья обновляет 10–15 связанных страниц. База умнеет с каждым твоим запросом.
+    </p>
+    <div class="hero-actions">
+      <a href="#" target="_blank" rel="noopener" class="btn btn-primary">
+        <span class="btn-play">▶</span>
+        Смотреть на YouTube
+      </a>
+      <a href="#steps" class="btn btn-ghost">Перейти к шагам</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ OBJECTIVES ═══════════════════════════════════════════ -->
+<section id="objectives">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-label">Что научишься делать</div>
+      <h2 class="section-title">Пять навыков — <span class="accent">вечная память</span> для Claude</h2>
+    </div>
+    <div class="obj-grid">
+
+      <div class="obj-card">
+        <div class="obj-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/><path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4" stroke-dasharray="2 2"/></svg>
+        </div>
+        <h4>База знаний Jarvis</h4>
+        <p>Свой AI-ассистент который знает тебя, твои цели, инструменты и стратегии.</p>
+      </div>
+
+      <div class="obj-card">
+        <div class="obj-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l16 8-16 8V4z"/><path d="M4 12h16" opacity="0.4"/></svg>
+        </div>
+        <h4>Скрейп одним URL</h4>
+        <p>Кидаешь ссылку — Claude скачивает текст, картинки, создаёт entities и concepts.</p>
+      </div>
+
+      <div class="obj-card">
+        <div class="obj-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 13h8"/></svg>
+        </div>
+        <h4>Web Clipper в браузере</h4>
+        <p>Одна кнопка — статья сохраняется прямо в папку твоего Jarvis.</p>
+      </div>
+
+      <div class="obj-card">
+        <div class="obj-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
+        </div>
+        <h4>Compound-ответы</h4>
+        <p>Jarvis сам пишет синтез в wiki/synthesis/ — и помнит его через неделю.</p>
+      </div>
+
+      <div class="obj-card">
+        <div class="obj-ico">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M14 3v5h5" opacity="0.5"/><path d="M9 13h6M9 17h4"/></svg>
+        </div>
+        <h4>Идеальная архитектура памяти</h4>
+        <p>Понимаешь когда нужен Obsidian, когда Pinecone, а когда — NotebookLM.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ TOOLS ═══════════════════════════════════════════ -->
+<section id="tools">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-label">Что понадобится</div>
+      <h2 class="section-title">Стек — <span class="accent">8 инструментов</span> для одной системы</h2>
+    </div>
+    <div class="tools-grid">
+
+      <a href="https://obsidian.md" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Obsidian</div>
+          <span class="tool-badge free">Бесплатно</span>
+        </div>
+        <div class="tool-url">obsidian.md</div>
+      </a>
+
+      <a href="https://antigravity.google/" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Antigravity</div>
+          <span class="tool-badge free">Бесплатно · Превью</span>
+        </div>
+        <div class="tool-url">antigravity.google</div>
+      </a>
+
+      <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Claude Code</div>
+          <span class="tool-badge paid">Pro / Max</span>
+        </div>
+        <div class="tool-url">claude.com/product/claude-code</div>
+      </a>
+
+      <a href="https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Obsidian Web Clipper</div>
+          <span class="tool-badge free">Бесплатно</span>
+        </div>
+        <div class="tool-url">chromewebstore.google.com</div>
+      </a>
+
+      <a href="https://pinecone.io" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Pinecone</div>
+          <span class="tool-badge freemium">Freemium</span>
+        </div>
+        <div class="tool-url">pinecone.io</div>
+      </a>
+
+      <a href="https://notebooklm.google.com" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">NotebookLM</div>
+          <span class="tool-badge free">Бесплатно</span>
+        </div>
+        <div class="tool-url">notebooklm.google.com</div>
+      </a>
+
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Gist Карпати</div>
+          <span class="tool-badge content">Оригинал</span>
+        </div>
+        <div class="tool-url">gist.github.com/karpathy</div>
+      </a>
+
+      <a href="https://habr.com/ru/articles/990854/" target="_blank" rel="noopener" class="tool">
+        <div class="tool-head">
+          <div class="tool-name">Статья с Хабра</div>
+          <span class="tool-badge content">Первый источник</span>
+        </div>
+        <div class="tool-url">habr.com/ru/articles/990854</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ STEPS ═══════════════════════════════════════════ -->
+<section id="steps">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-label">Пошаговая инструкция</div>
+      <h2 class="section-title">От пустой папки <span class="accent">до работающего Jarvis</span> за 30 минут</h2>
+      <p class="section-sub">Каждый шаг — отдельная карточка. Промпты внутри шагов копируются одной кнопкой. Порядок важен — не перескакивай.</p>
+    </div>
+
+    <div class="steps">
+
+      <!-- STEP 01 -->
+      <div class="step" data-num="01">
+        <div class="step-head">
+          <div class="step-num">01</div>
+          <h3 class="step-title">Скачай и открой Obsidian</h3>
+        </div>
+        <p class="step-intro">Obsidian — это визуальный слой над твоей базой знаний. Сам он ничего не делает, просто показывает папку с .md файлами и даёт граф связей.</p>
+        <div class="step-actions">
+          <div class="step-action">Скачай программу с obsidian.md → установи → открой</div>
+          <div class="step-action">Настройки (⚙ внизу слева) → Внешний вид → включи Dark Mode</div>
+          <div class="step-action">Окно пока держи открытым — папку подключим позже, когда Claude её наполнит</div>
+        </div>
+        <div class="step-hint">
+          <strong>Совет на будущее:</strong> когда папка будет открыта, зайди в Настройки → Файлы и ссылки → укажи папку по умолчанию для вложений: <code style="font-family:'JetBrains Mono',monospace;color:var(--amber)">raw/assets/</code>. Так картинки из Web Clipper будут аккуратно в одном месте.
+        </div>
+      </div>
+
+      <!-- STEP 02 -->
+      <div class="step" data-num="02">
+        <div class="step-head">
+          <div class="step-num">02</div>
+          <h3 class="step-title">Создай папку Jarvis и запусти Claude Code</h3>
+        </div>
+        <p class="step-intro">Вся система = одна папка с подпапками raw/, wiki/ и файлом CLAUDE.md. Работать будем одновременно в двух окнах: Antigravity (Claude Code пишет файлы) + Obsidian (ты видишь их визуально). Два окна — одна папка.</p>
+        <div class="step-actions">
+          <div class="step-action">Создай пустую папку — назови Jarvis (или своим именем)</div>
+          <div class="step-action">Открой её в Antigravity: File → Open Folder</div>
+          <div class="step-action">Открой терминал внутри Antigravity: Terminal → New Terminal, или Ctrl + `</div>
+          <div class="step-action">В терминале набери <code style="font-family:'JetBrains Mono',monospace;color:var(--amber)">claude</code> → Enter</div>
+          <div class="step-action">При первом запуске пройди логин — откроется браузер</div>
+        </div>
+      </div>
+
+      <!-- STEP 03 -->
+      <div class="step" data-num="03">
+        <div class="step-head">
+          <div class="step-num">03</div>
+          <h3 class="step-title">Скорми Claude промпт Карпати (на русском)</h3>
+        </div>
+        <p class="step-intro">Промпт Карпати — это инструкция, которая говорит Claude как вести твою Википедию. Два промпта: сначала короткая обёртка, потом большой текст LLM Wiki. Копируешь из шпаргалки ниже — вставляешь в Claude Code.</p>
+
+        <div class="prompt">
+          <div class="prompt-head">
+            <div class="prompt-label">Промпт 1 · Обёртка</div>
+            <button class="prompt-copy" data-copy="p1">◻ Скопировать</button>
+          </div>
+          <div class="prompt-body" id="p1">Привет! Я хочу, чтобы ты создал структуру папок по образцу, который я тебе сейчас скину. Если есть вопросы — задавай, но в целом просто следуй инструкции и создай каркас моей базы знаний.
+
+[сюда вставляется весь русский текст из Промпта 2 ниже]</div>
+        </div>
+
+        <div class="prompt">
+          <div class="prompt-head">
+            <div class="prompt-label">Промпт 2 · LLM Wiki (полный перевод на русский)</div>
+            <button class="prompt-copy" data-copy="p2">◻ Скопировать</button>
+          </div>
+          <div class="prompt-body" id="p2"># LLM Wiki
+
+Паттерн построения персональной базы знаний через LLM.
+
+Это файл-идея для копирования в твой LLM-агент (Claude Code, OpenAI Codex, OpenCode и т.п.). Его задача — передать концепцию верхнего уровня. Специфику ты проработаешь вместе со мной.
+
+## Основная идея
+
+Обычный опыт работы с LLM и документами выглядит как RAG: загружаешь коллекцию файлов, LLM извлекает релевантные куски при запросе и генерирует ответ. Работает, но LLM каждый раз открывает знания с нуля. Нет накопления. Спроси тонкий вопрос требующий синтеза пяти документов — и LLM каждый раз будет искать и клеить фрагменты заново. Ничего не накапливается. NotebookLM, загрузка файлов в ChatGPT и большинство RAG-систем работают так.
+
+Здесь идея другая. Вместо того чтобы просто доставать данные из сырых документов при запросе, LLM постепенно строит и поддерживает персистентную вики — структурированную, взаимосвязанную коллекцию markdown-файлов между мной и сырыми источниками. Когда я добавляю новый источник, LLM не просто индексирует его. Он читает, извлекает ключевую информацию и интегрирует в существующую вики — обновляет страницы сущностей, пересматривает тематические сводки, помечает противоречия, усиливает или оспаривает синтез. Знания компилируются один раз и поддерживаются в актуальном состоянии.
+
+Ключевое отличие: вики — персистентный, накапливающийся артефакт. Перекрёстные ссылки уже проставлены. Противоречия уже помечены. Синтез уже отражает всё что я прочитал. Вики становится богаче с каждым источником и каждым вопросом.
+
+Я не пишу вики сам — ты пишешь и поддерживаешь её. Моя задача — поставлять источники, исследовать и задавать правильные вопросы. Твоя — суммаризация, перекрёстные ссылки, каталогизация и вся бухгалтерия. На практике у меня с одной стороны открыт Claude Code, с другой — Obsidian. Ты вносишь правки на основе разговора, я в реальном времени листаю результаты — хожу по ссылкам, смотрю граф, читаю обновлённые страницы. Obsidian — это IDE; ты — программист; вики — кодовая база.
+
+## Архитектура
+
+Три слоя:
+
+Raw sources (сырые источники) — моя курированная коллекция исходников. Статьи, PDF, изображения, данные. Они неизменяемы — ты читаешь из них, но никогда не модифицируешь. Это источник истины.
+
+Wiki — директория сгенерированных тобой markdown-файлов. Сводки, страницы сущностей (entities), концепты, сравнения, обзор, синтез. Ты владеешь этим слоем целиком. Создаёшь страницы, обновляешь при добавлении источников, поддерживаешь перекрёстные ссылки и консистентность. Я читаю; ты пишешь.
+
+Schema — файл CLAUDE.md который говорит тебе как устроена вики, какие соглашения, какие рабочие процессы при загрузке источников, ответах и поддержке. Ключевой конфигурационный файл — он делает тебя дисциплинированным смотрителем вики, а не обычным чат-ботом. Мы вместе развиваем этот файл со временем.
+
+## Операции
+
+Ingest (загрузка). Я кидаю новый источник и прошу тебя обработать. Пример флоу: ты читаешь источник, обсуждаешь со мной ключевые выводы, пишешь сводку в вики, обновляешь индекс, обновляешь релевантные страницы сущностей и концептов, добавляешь запись в лог. Один источник может затронуть 10–15 страниц.
+
+Query (запрос). Я задаю вопросы. Ты ищешь релевантные страницы, читаешь и синтезируешь ответ с цитатами. Важный момент: хорошие ответы можешь сохранять обратно в вики как новые страницы — в папку wiki/synthesis/. Сравнение, анализ, связь которую я открыл — это ценно и не должно исчезать в истории чата.
+
+Lint (очистка). Периодически я прошу провести health-check вики. Ищи: противоречия, устаревшие утверждения, страницы-сироты без входящих ссылок, важные концепты без своей страницы, пропущенные перекрёстные ссылки, пробелы в данных.
+
+## Индекс и лог
+
+index.md — каталог всего в вики. Каждая страница со ссылкой, однострочной сводкой, опционально метаданные. Организован по категориям. Ты обновляешь при каждой загрузке. При ответе на запрос ты сначала читаешь индекс чтобы найти релевантные страницы, потом углубляешься.
+
+log.md — хронологический append-only лог. Что и когда произошло: загрузки, запросы, очистки. Каждая запись начинается с префикса вида ## [2026-04-15] ingest | Название источника.
+
+## Структура папок (создай сразу)
+
+Создай такую структуру:
+
+- raw/sources/      — сюда буду кидать исходники
+- raw/web-clipped/  — сюда Web Clipper будет сохранять статьи
+- raw/assets/       — картинки из источников
+- wiki/entities/    — люди, компании, инструменты
+- wiki/concepts/    — идеи, модели, принципы
+- wiki/sources/     — саммари каждого источника
+- wiki/synthesis/   — твои ответы на мои вопросы
+- wiki/index.md     — каталог всех страниц
+- wiki/log.md       — хронология изменений
+- CLAUDE.md         — твои правила работы (схема)
+
+## Как ты работаешь
+
+Когда я кидаю новый источник: читаешь → сохраняешь в raw/ → делаешь sources-страницу → создаёшь или обновляешь entity-страницы для людей и компаний → создаёшь или обновляешь concept-страницы для идей → обновляешь index.md → добавляешь запись в log.md.
+
+Когда я задаю вопрос: читаешь index.md → находишь релевантные страницы → читаешь их → синтезируешь ответ с ссылками на [[файлы]] → хороший ответ сохраняешь в wiki/synthesis/ как отдельный файл.
+
+Когда я прошу lint: проверяешь противоречия между страницами, устаревшие утверждения, битые ссылки, страницы-сироты, отсутствующие концепты.
+
+## Почему это работает
+
+Утомительная часть базы знаний — не чтение, а бухгалтерия. Обновление ссылок, сводок, пометки противоречий, консистентность на десятках страниц. Люди забрасывают вики потому что поддержка растёт быстрее ценности. Ты не устаёшь, не забываешь обновить ссылку, трогаешь 15 файлов за один проход. Вики остаётся живой потому что стоимость поддержки близка к нулю.
+
+Моя задача — курировать источники, направлять анализ, задавать хорошие вопросы. Твоя — всё остальное.
+
+Начни с создания структуры папок выше. Если есть уточняющие вопросы по моему домену — задай их. Когда готов — скажи, я кину первый источник.</div>
+        </div>
+
+        <div class="step-settings"><strong>Что создаст Claude:</strong> raw/, wiki/ (со всеми подпапками), CLAUDE.md, index.md, log.md. Подожди 2–3 минуты.</div>
+      </div>
+
+      <!-- STEP 04 -->
+      <div class="step" data-num="04">
+        <div class="step-head">
+          <div class="step-num">04</div>
+          <h3 class="step-title">Запусти Jarvis и дай первую статью</h3>
+        </div>
+        <p class="step-intro">Объясняем Claude кто ты и кидаем первый источник. Имя Jarvis — опционально, подставь своё. Статья — живой русский лонгрид про заработок на нейросетях в 2026.</p>
+
+        <div class="prompt">
+          <div class="prompt-head">
+            <div class="prompt-label">Промпт 3 · Запуск Jarvis с первой статьёй</div>
+            <button class="prompt-copy" data-copy="p3">◻ Скопировать</button>
+          </div>
+          <div class="prompt-body" id="p3">Чувак, хочу сделать wiki по заработку на нейросетях и AI-автоматизации. Назовём Jarvis — мой персональный ИИ-ассистент, который знает меня и помогает принимать лучшие решения про то, как зарабатывать на ИИ. Я буду кидать тебе статьи, кейсы, идеи, инструменты — и хочу, чтобы ты интегрировал всё это в структуру. Сначала — вот первый URL. Пройди по нему, скрапь весь контент (текст и картинки), разложи по raw/sources/ и сделай первую wiki-страницу в wiki/.
+
+URL: https://habr.com/ru/articles/990854/</div>
+        </div>
+
+        <div class="step-settings"><strong>Что сделает Claude:</strong> зайдёт на страницу, скачает текст + все картинки, создаст entity-страницы для авторов (Отли, Могилко, Мартел), концепты («лестница ценности», «модель ретейнера», «арбитраж осведомлённости»), обновит index и log.</div>
+      </div>
+
+      <!-- STEP 05 -->
+      <div class="step" data-num="05">
+        <div class="step-head">
+          <div class="step-num">05</div>
+          <h3 class="step-title">Поставь Obsidian Web Clipper</h3>
+        </div>
+        <p class="step-intro">Web Clipper — это кнопка в браузере «сохранить статью в Obsidian одним кликом». Настраиваешь один раз — пользуешься всегда.</p>
+        <div class="step-actions">
+          <div class="step-action">Установи расширение из Chrome Web Store (прямая ссылка в секции ссылок ниже)</div>
+          <div class="step-action">Нажми 🧩 (пазл справа от адресной строки) → найди Obsidian Web Clipper → закрепи 📌</div>
+          <div class="step-action">Открой любую страницу → клик на фиолетовый ромб → внизу popup шестерёнка ⚙ → Настройки</div>
+        </div>
+        <div class="step-settings">
+          <strong>Настройки Web Clipper:</strong><br>
+          • Хранилища → впиши имя vault точно как в Obsidian → Enter<br>
+          • Шаблоны → Новый шаблон → Название: Jarvis<br>
+          • Расположение заметки: raw/web-clipped/<br>
+          • Хранилище по умолчанию для шаблона: твой vault
+        </div>
+      </div>
+
+      <!-- STEP 06 -->
+      <div class="step" data-num="06">
+        <div class="step-head">
+          <div class="step-num">06</div>
+          <h3 class="step-title">Подключи папку к Obsidian как vault</h3>
+        </div>
+        <p class="step-intro">Теперь Obsidian увидит то, что Claude создал — файлы, граф, всю паутину связей.</p>
+        <div class="step-actions">
+          <div class="step-action">Возвращайся в Obsidian → слева внизу кликни на название vault → «Открыть папку как хранилище»</div>
+          <div class="step-action">Выбери свою папку Jarvis → Open → Trust author если спросит</div>
+          <div class="step-action">Слева появятся: CLAUDE.md, README.md, raw/, wiki/</div>
+          <div class="step-action">Включи граф — слева на панели иконка кружка с точками → клик</div>
+          <div class="step-action">Увидишь узлы и паутину связей. Крути мышкой — узлы разбегаются и стягиваются</div>
+        </div>
+      </div>
+
+      <!-- STEP 07 -->
+      <div class="step" data-num="07">
+        <div class="step-head">
+          <div class="step-num">07</div>
+          <h3 class="step-title">Задай Jarvis первый вопрос</h3>
+        </div>
+        <p class="step-intro">Проверяем что Claude не просто хранит файлы, а рассуждает над ними со ссылками на источники. Это главный тест системы.</p>
+
+        <div class="prompt">
+          <div class="prompt-head">
+            <div class="prompt-label">Промпт 4 · Вау-вопрос</div>
+            <button class="prompt-copy" data-copy="p4">◻ Скопировать</button>
+          </div>
+          <div class="prompt-body" id="p4">Окей, проверим систему. На основе всего что ты про меня знаешь — профиль, wiki, концепты, статья с Хабра — ответь: я хочу в ближайшие 3 месяца вырасти на YouTube и параллельно начать продавать услуги студии через канал. Какие 3 конкретные стратегии из того что мы уже собрали в Jarvis я могу применить? Предложи сочетания — концепт плюс автор равно конкретное действие. И перечисли какие файлы из wiki ты использовал.</div>
+        </div>
+
+        <div class="step-hint">
+          <strong>Самое крутое:</strong> после ответа заглянь в <code style="font-family:'JetBrains Mono',monospace;color:var(--violet-bright)">wiki/synthesis/</code>. Там появится новый файл с разбором. Через неделю спросишь «какая стратегия сработала?» — Claude вспомнит. Это compound effect: один вопрос → новая wiki-страница.
+        </div>
+      </div>
+
+      <!-- STEP 08 -->
+      <div class="step" data-num="08">
+        <div class="step-head">
+          <div class="step-num">08</div>
+          <h3 class="step-title">Пойми ограничения и куда идти дальше</h3>
+        </div>
+        <p class="step-intro">Obsidian-RAG классный, но у него есть потолок: индекс растёт линейно с базой → каждый запрос становится дороже. Нет семантического поиска. Не для архивов на 10 000+ файлов. Формула идеальной AI-памяти из 4 слоёв:</p>
+        <div class="step-actions">
+          <div class="step-action"><strong style="color:var(--amber)">CLAUDE.md (бейдж)</strong> — твоя личность и правила, не меняются</div>
+          <div class="step-action"><strong style="color:var(--amber)">Obsidian (мастерская)</strong> — активное мышление, проекты, идеи</div>
+          <div class="step-action"><strong style="color:var(--amber)">Pinecone (склад)</strong> — архивы транскриптов и больших статичных данных</div>
+          <div class="step-action"><strong style="color:var(--amber)">NotebookLM</strong> — инструмент для глубокого погружения в 200+ источников за раз</div>
+        </div>
+        <div class="step-hint">
+          Как использовать NotebookLM для deep research — смотри отдельное видео: <a href="https://www.youtube.com/watch?v=vXx8RE0sxXE" target="_blank" rel="noopener" style="color:var(--violet-bright);text-decoration:underline">youtube.com/watch?v=vXx8RE0sxXE</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ LINKS ═══════════════════════════════════════════ -->
+<section id="links">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-label">Все ссылки</div>
+      <h2 class="section-title">Открыть <span class="accent">в одном месте</span></h2>
+    </div>
+    <div class="links-grid">
+
+      <a href="https://obsidian.md" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">O</div>
+        <div class="link-body">
+          <div class="link-name">Obsidian</div>
+          <div class="link-url">obsidian.md</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://antigravity.google/" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">A</div>
+        <div class="link-body">
+          <div class="link-name">Antigravity IDE</div>
+          <div class="link-url">antigravity.google</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://antigravity.google/download" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">↓</div>
+        <div class="link-body">
+          <div class="link-name">Antigravity — прямое скачивание</div>
+          <div class="link-url">antigravity.google/download</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://claude.com/product/claude-code" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">C</div>
+        <div class="link-body">
+          <div class="link-name">Claude Code</div>
+          <div class="link-url">claude.com/product/claude-code</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://chromewebstore.google.com/detail/obsidian-web-clipper/cnjifjpddelmedmihgijeibhnjfabmlf" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">W</div>
+        <div class="link-body">
+          <div class="link-name">Obsidian Web Clipper — Chrome Store</div>
+          <div class="link-url">chromewebstore.google.com/.../obsidian-web-clipper</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://obsidian.md/clipper" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">✦</div>
+        <div class="link-body">
+          <div class="link-name">Obsidian Web Clipper — официально</div>
+          <div class="link-url">obsidian.md/clipper</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">K</div>
+        <div class="link-body">
+          <div class="link-name">Gist Карпати — оригинал</div>
+          <div class="link-url">gist.github.com/karpathy/442a6bf...</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://x.com/karpathy/status/2039805659525644595" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">𝕏</div>
+        <div class="link-body">
+          <div class="link-name">Твит Карпати — 18M просмотров</div>
+          <div class="link-url">x.com/karpathy/status/2039805...</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://habr.com/ru/articles/990854/" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">H</div>
+        <div class="link-body">
+          <div class="link-name">Статья Хабр — 15 идей заработка 2026</div>
+          <div class="link-url">habr.com/ru/articles/990854</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://pinecone.io" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">P</div>
+        <div class="link-body">
+          <div class="link-name">Pinecone — векторная база</div>
+          <div class="link-url">pinecone.io</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://notebooklm.google.com" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">N</div>
+        <div class="link-body">
+          <div class="link-name">NotebookLM — deep research Google</div>
+          <div class="link-url">notebooklm.google.com</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+      <a href="https://www.youtube.com/watch?v=vXx8RE0sxXE" target="_blank" rel="noopener" class="link-card">
+        <div class="link-ico">▶</div>
+        <div class="link-body">
+          <div class="link-name">Видео про NotebookLM</div>
+          <div class="link-url">youtube.com/watch?v=vXx8RE0sxXE</div>
+        </div>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l10-10M17 17V7H7"/></svg>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ CTA ═══════════════════════════════════════════ -->
+<section class="cta-wrap">
+  <div class="container">
+    <div class="cta">
+      <div class="cta-text">
+        Пошаговый план по&nbsp;выходу<br>
+        на&nbsp;первые <span class="gold">100к в&nbsp;ИИ</span> в&nbsp;2026
+      </div>
+      <a href="https://t.me/mastodont_aibot?start=agency" target="_blank" rel="noopener" class="cta-btn">
+        Забрать план
+        <span style="font-size:11px">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════ FOOTER ═══════════════════════════════════════════ -->
+<footer>
+  <div class="container foot-inner">
+    <div class="foot-brand">
+      <a href="https://aimastodont.com/" target="_blank" rel="noopener" class="foot-brand-name">МАСТОДОНТ</a>
+      <div class="foot-tagline">AI и нейросети - просто, по делу</div>
+    </div>
+    <a href="https://www.youtube.com/@aiBoomb" target="_blank" rel="noopener" class="foot-yt">YouTube: @aiBoomb</a>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════
+// COPY BUTTONS
+// ═══════════════════════════════════════════
+document.querySelectorAll('.prompt-copy').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.getAttribute('data-copy');
+    const el = document.getElementById(id);
+    if (!el) return;
+    const text = el.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      const original = btn.textContent;
+      btn.textContent = '✓ Скопировано';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (e) {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const original = btn.textContent;
+      btn.textContent = '✓ Скопировано';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
+});
+
+// ═══════════════════════════════════════════
+// FADE-UP observer
+// ═══════════════════════════════════════════
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
+
+document.querySelectorAll('.step, .obj-card, .tool, .link-card, .cta').forEach(el => {
+  el.classList.add('fade-up');
+  io.observe(el);
+});
+</script>
+
+</body>
+</html>
